@@ -1,0 +1,47 @@
+########################
+# ***************************************
+# Oauth - Access Token, Secret 取得処理
+# ***************************************
+require 'oauth'
+ 
+class TwitterAccessToken
+  SITE_URL = "https://twitter.com"
+ 
+  def get_token
+    # Consumer 情報入力
+    print 'Please input CONSUMER KEY   : '
+    consumer_key    = gets.chomp
+    print 'Please input CONSUMER SECRET: '
+    consumer_secret = gets.chomp
+ 
+    # Oauth オブジェクト生成
+    oauth = OAuth::Consumer.new(
+      consumer_key,
+      consumer_secret,
+      site: SITE_URL
+    )
+ 
+    # リクエストトークン取得
+    request_token = oauth.get_request_token
+ 
+    # PIN コード取得
+    puts  "Please access this URL      : #{request_token.authorize_url}"
+    print "Please enter the PIN code   : "
+    pin_code = gets.to_i
+ 
+    # アクセストークン取得
+    access_token = request_token.get_access_token(
+      oauth_verifier: pin_code
+    )
+ 
+    # アクセストークン表示
+    puts "---"
+    puts "ACCESS TOKEN                : #{access_token.token}"
+    puts "ACCESS TOKEN SECRET         : #{access_token.secret}"
+  rescue => e
+    puts "[#{e.class}] #{e.message}"
+    exit 1
+  end
+end
+ 
+TwitterAccessToken.new.get_token

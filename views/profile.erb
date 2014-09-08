@@ -1,0 +1,22 @@
+<h2>Profile Page</h2>
+<h3><%=@concept_name%></h3>
+<div class="weather">
+	<img src="<%=@icon_url%>" alt=<%=@icon%>/>
+	<span><%=@icon%></span>
+	<div class="cur_temp">
+		<span class="temp"><%=@temp%></span>
+		<span>°F</span>
+	</div>
+	<div id="curFeel">
+		<span class="label">Feels Like</span>
+		<span style="color: #fd843b;"><%=@feels_like%></span>
+		<span>°F</span>
+	</div>
+</div>
+<div class="trending">
+	<ul>
+	<% @query_results.each do |trend| %>
+		<li><%=trend["name"]%></li>
+	<%end%>
+	</ul>
+</div>
