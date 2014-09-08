@@ -1,0 +1,35 @@
+<div class="wrapper">
+<h3><%=@concept_name%></h3>
+<section class="weather">
+	<img class="icon" src="<%=@icon_url%>" alt=<%=@icon%>/>
+	<span class="icon_text"><%=@icon%></span>
+	<div class="cur_temp">
+		<span class="temp"><%=@temp%></span>
+		<span>°F</span>
+	</div>
+	<div id="curFeel">
+		<span class="label">Feels Like</span>
+		<span style="color: #fd843b;"><%=@feels_like%></span>
+		<span>°F</span>
+	</div>
+</section>
+<section class="trending">
+	<ol>
+	<% @trending_results.each do |trend| %>
+		<li class="trend"><%=trend["name"]%></li>
+	<%end%>
+	</l>
+</section>
+
+<section class="instagram">
+	<ul class="photos">
+	<% @instagram_urls.first(12).each_with_index do |url, index| %>
+		<li class="instagrams"><img src=<%="#{url}"%>>
+		<form class="remove" action="/profile/instagram/<%= index %>" method="POST">
+  		<input type="hidden" name="_method" value="DELETE">
+  		<input type="submit" value="Remove">
+		</form></li>
+	<%end%>
+	</ul>
+</section>
+</div>

@@ -1,35 +1,9 @@
 <h2>Profile Page</h2>
-<h3><%=@concept_name%></h3>
-<div class="weather">
-	<img src="<%=@icon_url%>" alt=<%=@icon%>/>
-	<span><%=@icon%></span>
-	<div class="cur_temp">
-		<span class="temp"><%=@temp%></span>
-		<span>°F</span>
-	</div>
-	<div id="curFeel">
-		<span class="label">Feels Like</span>
-		<span style="color: #fd843b;"><%=@feels_like%></span>
-		<span>°F</span>
-	</div>
-</div>
-<div class="trending">
-	<ul>
-	<% @query_results.each do |trend| %>
-		<li><%=trend["name"]%></li>
-	<%end%>
-	</ul>
-</div>
-
-<div class="instagram">
-	<ul class="photos">
-	<% @instagram_urls.first(5).each_with_index do |url, index| %>
-		<li><img src=<%="#{url}"%>></li>
-		<form action="/profile/instagram/<%= index %>" method="POST">
-  		<input type="hidden" name="_method" value="DELETE">
-  		<input type="submit" value="Remove">
-		</form>
-
-	<%end%>
-	</ul>
-</div>
+<form action="/snapshot" method="GET">
+  <label for="country">Country: </label>
+  <input type="country" name="country" placeholder="Country" id="state">
+<br/><br/>
+  <label for="keyword">Location: </label>
+  <input type="text" name="keyword" placeholder="ie: Times Square, Las Vegas, Catskills" id="keyword">
+  <input type="submit" value="Create Snapshot">
+</form>

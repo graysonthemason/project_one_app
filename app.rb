@@ -83,8 +83,6 @@ class App < Sinatra::Base
   ########################
   $redis = Redis.new(:url => ENV["REDISTOGO_URL"])
 
-instagram_urls = []
-
 
 
 Instagram.configure do |config|
@@ -119,19 +117,19 @@ end
   ########################
 
   get('/') do
-    render(:erb, :index, :layout => :layout)
+    redirect to('/profile')
   end
 
   get('/feed') do
 
   end
 
-  get('/profile') do
+  get('/snapshot') do
 #retrieve geolocation
     nytimes_url = "http://api.nytimes.com/svc/semantic/v2/geocodes/query.json?&name=#{params[:keyword].gsub(' ', '+')}&country_name=#{params[:country].gsub(' ', '+')}&perpage=1&api-key=#{Geo_API_Key}"
 # http://api.nytimes.com/svc/semantic/v2/geocodes/query.json?&name=Las+Vegas&country_name=United+States&api-key=####
     location = HTTParty.get(nytimes_url)
-    @concept_name = location["results"][0]["concept_name"] 
+    @concept_name = location["results"][0]["concept_name"]
     @latitude = location["results"][0]["geocode"]["latitude"] 
     @longitude = location["results"][0]["geocode"]["longitude"] 
 # retrieve weather
@@ -142,8 +140,7 @@ end
     @icon_url = weather["current_observation"]["icon_url"]
     @feels_like = weather["current_observation"]["feelslike_f"] 
     @temp = weather["current_observation"]["temp_f"]
-#redis set new feed object
-    Feed.new(params)
+
 #Twitter Authorize
     headers = 
     {
@@ -152,67 +149,66 @@ end
     }
     body = 'grant_type=client_credentials'
     response = Twitter.post('/oauth2/token', :body => body, :headers => headers)
-    if response.code == 200
-      bearer_token = response['access_token']
-    else
-      puts "[ERROR] Something's gone terribly wrong"
-    end
+    bearer_token = response['access_token']
     headers = 
     {
       'Authorization' => "Bearer #{bearer_token}", 
       'Content-Type'  => "application/x-www-form-urlencoded;charset=UTF-8"
     }
-    # @query = "q=city&geocode=#{@latitude},#{@longitude},5mi"
-    # @get_string = "/1.1/search/tweets.json?q=&lang=en&geocode=#{@latitude},#{@longitude},10mi&count=100"
-    # hashtags = []
-    # query_results = Twitter.get(@get_string, :headers => headers)
-    # query_results["statuses"].each do |status|
-    #   status["entities"]["hashtags"].each { |hashtag| hashtags.push(hashtag["text"])}
-    # end
-    # @trending = most_common_hashtags(hashtags)
 #twitter get and manipulate data    
-    @get_woeid_url = "https://api.twitter.com/1.1/trends/closest.json?lat=#{@latitude}&long=#{@longitude}"
-    woeid_results = Twitter.get(@get_woeid_url, :headers => headers)
-    @woeid = woeid_results.to_a[0]["woeid"]
-    @trending_query = "https://api.twitter.com/1.1/trends/place.json?id=#{@woeid}"
-    @query_results = Twitter.get(@trending_query , :headers => headers)[0]["trends"]
+    get_woeid_url = "https://api.twitter.com/1.1/trends/closest.json?lat=#{@latitude}&long=#{@longitude}"
+    woeid_results = Twitter.get(get_woeid_url, :headers => headers)
+    woeid = woeid_results.to_a[0]["woeid"]
+    trending_query = "https://api.twitter.com/1.1/trends/place.json?id=#{woeid}"
+    @trending_results = Twitter.get(trending_query , :headers => headers)[0]["trends"]
 #Instagram
-    # inst = HTTParty.get("https://api.instagram.com/oauth/authorize/?client_id=#{instagram_client_id}&redirect_uri=http://127.0.0.1:9393/profile&response_type=code")
-
-  client = Instagram.client(:access_token => session[:access_token])
-  # results = client.location_search(@latitude,@longitude,"1")
-  # location_id = results[0]["id"]
-  # new_results = client.location_recent_media(location_id)
-  results = client.media_search(@latitude,@longitude)
-  # new_results[0]["images"]["thumbnail"]
-  
-  @instagram_urls = instagram_urls
-  results.each do |result|
-    @instagram_urls.push(result["images"]["low_resolution"]["url"])
+    client = Instagram.client(:access_token => session[:access_token])
+    results = client.media_search(@latitude,@longitude)
+    @instagram_urls = []
+    results.each do |result|
+      @instagram_urls.push(result["images"]["low_resolution"]["url"])
+    end
+#redis set new feed object for user
+    feed_hash = {
+      "concept_name" => @concept_name,
+      "latitude" => @latitude,
+      "longitude" => @longitude,
+      "icon" => @icon,
+      "icon_url" => @icon_url,
+      "feels_like" => @feels_like,
+      "temp" => @temp,
+      "instagram" => @instagram_urls,
+      "trending_results" => @trending_results
+    }
+    Feed.new(feed_hash)
+    redirect to('/snapshot/show')
   end
-
-# binding.pry
-
-
-# get "/location_recent_media" do
-#   client = Instagram.client(:access_token => session[:access_token])
-#   html = "<h1>Media from the Instagram Office</h1>"
-#   for media_item in client.location_recent_media(514276)
-#     html << "<img src='#{media_item.images.thumbnail.url}'>"
-#   end
-#   html
-# end
-
-
-
-
-
+  get('/snapshot/show') do
+    # string = $redis.get($redis.keys.sort[-2])
+    @feed_hash = JSON.parse($redis.get($redis.keys.sort_by {|s| s[/\d+/].to_i}.last))
+    # binding.pry
+    @concept_name = @feed_hash["concept_name"]
+    @latitude = @feed_hash["latitude"]
+    @longitude = @feed_hash["longitude"]
+    @icon_url = @feed_hash["icon_url"]
+    @icon = @feed_hash["icon"]
+    @feels_like = @feed_hash["feels_like"]
+    @temp = @feed_hash["temp"]
+    @instagram_urls = @feed_hash["instagram"]
+    @trending_results = @feed_hash["trending_results"]
+    render(:erb, :_snapshot, :layout => :layout)
+  end
+  get('/profile') do
 
     render(:erb, :profile, :layout => :layout)
   end
   delete('/profile/instagram/:id') do
-    instagram_urls.delete_at(params[:id].to_i)
-    redirect to ('/profile')
+    # binding.pry
+    # current = JSON.parse($redis.get($redis.keys.sort[-2]))
+    current_feed = JSON.parse($redis.get($redis.keys.sort_by {|s| s[/\d+/].to_i}.last))
+    current_feed["instagram"].delete_at(params[:id].to_i)
+    $redis.set("user:#{current_feed["id"]}", current_feed.to_json)
+    redirect to ('/snapshot/show')
   end
 end
 
