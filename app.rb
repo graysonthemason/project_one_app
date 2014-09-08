@@ -83,7 +83,7 @@ class App < Sinatra::Base
   ########################
   $redis = Redis.new(:url => ENV["REDISTOGO_URL"])
 
-
+instagram_urls = []
 
 
 
@@ -185,7 +185,8 @@ end
   # new_results = client.location_recent_media(location_id)
   results = client.media_search(@latitude,@longitude)
   # new_results[0]["images"]["thumbnail"]
-  @instagram_urls = []
+  
+  @instagram_urls = instagram_urls
   results.each do |result|
     @instagram_urls.push(result["images"]["low_resolution"]["url"])
   end
@@ -207,8 +208,11 @@ end
 
 
 
-
     render(:erb, :profile, :layout => :layout)
+  end
+  delete('/profile/instagram/:id') do
+    instagram_urls.delete_at(params[:id].to_i)
+    redirect to ('/profile')
   end
 end
 
