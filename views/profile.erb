@@ -20,3 +20,16 @@
 	<%end%>
 	</ul>
 </div>
+
+<div class="instagram">
+	<ul class="photos">
+	<% @instagram_urls.first(5).each do |url| %>
+		<li><img src=<%="#{url}"%>></li>
+	<form action="/cheeses/<%= @cheese["id"] %>" method="POST">
+  <input type="hidden" name="_method" value="DELETE">
+  <input type="submit" value="Delete Cheese">
+</form>
+
+	<%end%>
+	</ul>
+</div>

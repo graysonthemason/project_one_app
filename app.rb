@@ -10,6 +10,7 @@ require 'open-uri'
 require 'rest_client'
 require 'base64'
 require_relative 'twitter'
+require 'instagram'
 
 
 class App < Sinatra::Base
@@ -25,7 +26,10 @@ class App < Sinatra::Base
   end
     encoded = "alQwb28yc1d3eGNBVFVwWUh4bTZvTmJYQTp5WTF4VFF5NzN0UU12WnNPUW1HbVJsNGN4NWFtcTh5cnBCNnJ1NUF1aEQ5QWhnTDQ1RA0K"
 
-    
+    CALLBACK_URL = "http://localhost:9393/oauth/callback"
+
+
+
 
 
   before do
@@ -78,6 +82,27 @@ class App < Sinatra::Base
   # DB Configuration
   ########################
   $redis = Redis.new(:url => ENV["REDISTOGO_URL"])
+
+
+
+
+
+Instagram.configure do |config|
+  config.client_id = instagram_client_id
+  config.client_secret = instagram_client_secret
+  # For secured endpoints only
+  #config.client_ips = '<Comma separated list of IPs>'
+end
+
+get "/oauth/connect" do
+  redirect Instagram.authorize_url(:redirect_uri => CALLBACK_URL)
+end
+
+get "/oauth/callback" do
+  response = Instagram.get_access_token(params[:code], :redirect_uri => CALLBACK_URL)
+  session[:access_token] = response.access_token
+  redirect "/profile"
+end
 
   ########################
   # Methods
@@ -152,8 +177,37 @@ class App < Sinatra::Base
     @trending_query = "https://api.twitter.com/1.1/trends/place.json?id=#{@woeid}"
     @query_results = Twitter.get(@trending_query , :headers => headers)[0]["trends"]
 #Instagram
-    inst = HTTParty.get("https://api.instagram.com/oauth/authorize/?client_id=#{instagram_client_id}&redirect_uri=http://127.0.0.1:9393/profile&response_type=code")
+    # inst = HTTParty.get("https://api.instagram.com/oauth/authorize/?client_id=#{instagram_client_id}&redirect_uri=http://127.0.0.1:9393/profile&response_type=code")
+
+  client = Instagram.client(:access_token => session[:access_token])
+  # results = client.location_search(@latitude,@longitude,"1")
+  # location_id = results[0]["id"]
+  # new_results = client.location_recent_media(location_id)
+  results = client.media_search(@latitude,@longitude)
+  # new_results[0]["images"]["thumbnail"]
+  @instagram_urls = []
+  results.each do |result|
+    @instagram_urls.push(result["images"]["low_resolution"]["url"])
+  end
+
 # binding.pry
+
+
+# get "/location_recent_media" do
+#   client = Instagram.client(:access_token => session[:access_token])
+#   html = "<h1>Media from the Instagram Office</h1>"
+#   for media_item in client.location_recent_media(514276)
+#     html << "<img src='#{media_item.images.thumbnail.url}'>"
+#   end
+#   html
+# end
+
+
+
+
+
+
+
     render(:erb, :profile, :layout => :layout)
   end
 end

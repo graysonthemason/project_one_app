@@ -8,6 +8,7 @@ gem 'redis',  '3.1.0'
 gem 'httparty'
 gem 'json'
 gem 'rest_client'
+gem 'instagram'
 
 # only used in development locally
 group :development do
