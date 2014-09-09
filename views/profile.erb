@@ -1,9 +1,16 @@
+<div clas="profile">
 <h2>Profile Page</h2>
 <form action="/snapshot" method="GET">
-  <label for="country">Country: </label>
-  <input type="country" name="country" placeholder="Country" id="state">
-<br/><br/>
   <label for="keyword">Location: </label>
   <input type="text" name="keyword" placeholder="ie: Times Square, Las Vegas, Catskills" id="keyword">
   <input type="submit" value="Create Snapshot">
 </form>
+<section class="feeds">
+	<ul>
+		<%@feeds.drop(1).each_with_index do |feed, index| %>
+			<li><a href="/snapshot/show?index=<%=index%>"><%=JSON.parse($redis.get(feed))["concept_name"]%></a></li>
+			<%end%>
+	</ul>
+
+</section>
+</div>
