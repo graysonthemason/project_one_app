@@ -191,6 +191,8 @@ end
     @temp = @feed_hash["temp"]
     @instagram_urls = @feed_hash["instagram"]
     @trending_results = @feed_hash["trending_results"]
+    @statuses = @feed_hash["statuses"]
+    # binding.pry
 
     # Use 'track' to track a list of single-word keywords
 # TweetStream::Client.new.track('term1') do |status|
@@ -204,15 +206,7 @@ end
 # end
 
 
-# statuses = []
-# TweetStream::Client.new.sample do |status, client|
-#   statuses << status
-#   client.stop if statuses.size >= 10
-# end
 
-# @statuses = statuses.map do |status|
-#   {user_name: status.user.name, text: status.full_text}
-# end
 
 # binding.pry
 # TweetStream::Client.new.sample do |status|
@@ -244,6 +238,7 @@ end
     @feels_like = weather["current_observation"]["feelslike_f"] 
     @temp = weather["current_observation"]["temp_f"]
 
+   
     #Twitter Authorize
     headers = 
     {
@@ -272,6 +267,20 @@ end
       @instagram_urls.push(result["images"]["low_resolution"]["url"])
     end
 
+     statuses = []
+     # binding.pry
+# TweetStream::Client.new.locations((@latitude.to_i + 0.2),(@longitude.to_i + 0.2),(@latitude.to_i - 0.2),(@longitude.to_i - 0.2)) do |status, client|
+TweetStream::Client.new.track("#{params[:keyword].gsub(' ','')}") do |status, client|
+  statuses << status
+  client.stop if statuses.size >= 5
+end
+
+@statuses = statuses.map do |status|
+  {user_name: status.user.name, text: status.full_text}
+end
+
+
+
     #redis set new feed object for user
     feed_hash = {
       "concept_name" => @concept_name,
@@ -282,9 +291,11 @@ end
       "feels_like" => @feels_like,
       "temp" => @temp,
       "instagram" => @instagram_urls,
-      "trending_results" => @trending_results
+      "trending_results" => @trending_results,
+      "statuses" => @statuses
     }
     Feed.new(feed_hash)
+    # binding.pry
     redirect to('/snapshot/show')
   end
 
