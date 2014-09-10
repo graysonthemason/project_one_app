@@ -26,6 +26,9 @@ class App < Sinatra::Base
     enable :logging
     enable :method_override
     enable :sessions
+
+  $redis = Redis.new(:url => ENV["REDISTOGO_URL"])
+
    
   end
   encoded = "alQwb28yc1d3eGNBVFVwWUh4bTZvTmJYQTp5WTF4VFF5NzN0UU12WnNPUW1HbVJsNGN4NWFtcTh5cnBCNnJ1NUF1aEQ5QWhnTDQ1RA0K"
@@ -38,7 +41,7 @@ class App < Sinatra::Base
     CLIENT_SECRET_GOOGLE = "XAlp1T20f1C_yNDidn50O5ZQ"
    
     # JAVASCRIPT_ORIGINS = "http://127.0.0.1:9292"
-    if ENV["RACK_ENV"] == "development"
+  if ENV["RACK_ENV"] == "development"
     WEBSITE_URL = "http://localhost:9292"
     CALLBACK_URL = "http://localhost:9292/oauth/callback"
     REDIRECT_URI = "http://localhost:9292/Oauth"
@@ -47,8 +50,8 @@ class App < Sinatra::Base
   else
     REDIRECT_URIS_GOOGLE = "http://glacial-fjord-8454.herokuapp.com/oauth2callback"
     CALLBACK_URL = "http://glacial-fjord-8454.herokuapp.com/oauth/callback"
-  WEBSITE_URL = "http://glacial-fjord-8454.herokuapp.com/"
-  REDIRECT_URI = "http://glacial-fjord-8454.herokuapp.com/Oauth"
+    WEBSITE_URL = "http://glacial-fjord-8454.herokuapp.com/"
+    REDIRECT_URI = "http://glacial-fjord-8454.herokuapp.com/Oauth"
     JAVASCRIPT_ORIGINS = "http://glacial-fjord-8454.herokuapp.com/"
   end
 
@@ -61,15 +64,13 @@ class App < Sinatra::Base
     logger.info "Response Headers: #{response.headers}"
   end
 
-
-
-TweetStream.configure do |config|
-  config.consumer_key       = 'jT0oo2sWwxcATUpYHxm6oNbXA'
-  config.consumer_secret    = 'yY1xTQy73tQMvZsOQmGmRl4cx5amq8yrpB6ru5AuhD9AhgL45D'
-  config.oauth_token        = '95246661-SOQsy4oZM6HgogQVCUwkeQ2UcvxFqhzrRbvrLm88H'
-  config.oauth_token_secret = 'jutb4vmi3HwBGujNGzjmgIfQHg7eqP9Vr1UacUxLbmf3O'
-  config.auth_method        = :oauth
-end
+  # TweetStream.configure do |config|
+  #   config.consumer_key       = 'jT0oo2sWwxcATUpYHxm6oNbXA'
+  #   config.consumer_secret    = 'yY1xTQy73tQMvZsOQmGmRl4cx5amq8yrpB6ru5AuhD9AhgL45D'
+  #   config.oauth_token        = '95246661-SOQsy4oZM6HgogQVCUwkeQ2UcvxFqhzrRbvrLm88H'
+  #   config.oauth_token_secret = 'jutb4vmi3HwBGujNGzjmgIfQHg7eqP9Vr1UacUxLbmf3O'
+  #   config.auth_method        = :oauth
+  # end
 
   ########################
   # Keys and ID's
@@ -86,10 +87,8 @@ end
   ###TWITTER
   twitter_api_key =  "jT0oo2sWwxcATUpYHxm6oNbXA"
   twitter_api_secret = "yY1xTQy73tQMvZsOQmGmRl4cx5amq8yrpB6ru5AuhD9AhgL45D"
-
   twitter_access_token = "95246661-SOQsy4oZM6HgogQVCUwkeQ2UcvxFqhzrRbvrLm88H"
   twitter_access_token_secret = "jutb4vmi3HwBGujNGzjmgIfQHg7eqP9Vr1UacUxLbmf3O"
-
   twitter_bearer_token_credentials = "#{twitter_api_key}:#{twitter_api_secret}"
   twitter_base_encoded = "alQwb28yc1d3eGNBVFVwWUh4bTZvTmJYQTp5WTF4VFF5NzN0UU12WnNPUW1HbVJsNGN4NWFtcTh5cnBCNnJ1NUF1aEQ5QWhnTDQ1RA0K"
 
@@ -103,7 +102,6 @@ end
   ########################
   # DB Configuration
   ########################
-  $redis = Redis.new(:url => ENV["REDISTOGO_URL"])
 
   Instagram.configure do |config|
     config.client_id = instagram_client_id
@@ -222,6 +220,7 @@ end
 
 
   get('/snapshot') do
+    # binding.pry
     #retrieve geolocation
     nytimes_url = "http://api.nytimes.com/svc/semantic/v2/geocodes/query.json?&name=#{params[:keyword].gsub(' ', '+')}&perpage=1&api-key=#{Geo_API_Key}"
     # http://api.nytimes.com/svc/semantic/v2/geocodes/query.json?&name=Las+Vegas&country_name=United+States&api-key=####
@@ -267,19 +266,16 @@ end
       @instagram_urls.push(result["images"]["low_resolution"]["url"])
     end
 
-     statuses = []
-     # binding.pry
-# TweetStream::Client.new.locations((@latitude.to_i + 0.2),(@longitude.to_i + 0.2),(@latitude.to_i - 0.2),(@longitude.to_i - 0.2)) do |status, client|
-TweetStream::Client.new.track("#{params[:keyword].gsub(' ','')}") do |status, client|
-  statuses << status
-  client.stop if statuses.size >= 5
-end
+    #Twitter stream
+    # statuses = []
+    # TweetStream::Client.new.track("#{params[:keyword].gsub(' ','')}") do |status, client|
+    #   statuses << status
+    #   client.stop if statuses.size >= 5
+    # end
 
-@statuses = statuses.map do |status|
-  {user_name: status.user.name, text: status.full_text}
-end
-
-
+    # @statuses = statuses.map do |status|
+    #   {user_name: status.user.name, text: status.full_text}
+    # end
 
     #redis set new feed object for user
     feed_hash = {
@@ -295,7 +291,6 @@ end
       "statuses" => @statuses
     }
     Feed.new(feed_hash)
-    # binding.pry
     redirect to('/snapshot/show')
   end
 

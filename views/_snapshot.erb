@@ -25,16 +25,7 @@
 	</li>
 </section>
 
-<section class="twitters">
-	<div class="tweet_wrap">
-	<ul class="tweet_list">
-		<%@statuses.each do |tweet|%>
-		<li><span class="username"><%="#{tweet["user_name"]}:"%></span> <%=" #{tweet["text"]}"%></li>
-		<%end%>
-	</ul>
- </div>
 
-</section>
 <%end%>
 <section class="instagram">
 <h3><%=@concept_name%></h3>
