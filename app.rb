@@ -9,8 +9,11 @@ require 'uri'
 require 'open-uri'
 require 'rest_client'
 require 'base64'
-require_relative 'twitter'
+require_relative 'twitters'
 require 'instagram'
+require 'securerandom'
+require 'jwt'
+require 'tweetstream'
 
 
 class App < Sinatra::Base
@@ -26,8 +29,16 @@ class App < Sinatra::Base
    
   end
   encoded = "alQwb28yc1d3eGNBVFVwWUh4bTZvTmJYQTp5WTF4VFF5NzN0UU12WnNPUW1HbVJsNGN4NWFtcTh5cnBCNnJ1NUF1aEQ5QWhnTDQ1RA0K"
- CURRENT_FEED_ID = ""
+  $current_feed_id = ""
   CALLBACK_URL = "http://localhost:9393/oauth/callback"
+
+#GOOGLE SIGN IN
+    CLIENT_ID_GOOGLE = "381692329282-fft9jv4jfig202c13k6ajuklm0d1ev1u.apps.googleusercontent.com"
+    EMAIL_ADDRESS_GOOGLE = "381692329282-fft9jv4jfig202c13k6ajuklm0d1ev1u@developer.gserviceaccount.com"
+    CLIENT_SECRET_GOOGLE = "XAlp1T20f1C_yNDidn50O5ZQ"
+    REDIRECT_URIS_GOOGLE = "http://127.0.0.1:9292/oauth2callback"
+    JAVASCRIPT_ORIGINS = "http://127.0.0.1:9292"
+
 
   before do
     logger.info "Request Headers: #{headers}"
@@ -37,6 +48,17 @@ class App < Sinatra::Base
   after do
     logger.info "Response Headers: #{response.headers}"
   end
+
+
+
+TweetStream.configure do |config|
+  config.consumer_key       = 'jT0oo2sWwxcATUpYHxm6oNbXA'
+  config.consumer_secret    = 'yY1xTQy73tQMvZsOQmGmRl4cx5amq8yrpB6ru5AuhD9AhgL45D'
+  config.oauth_token        = '95246661-SOQsy4oZM6HgogQVCUwkeQ2UcvxFqhzrRbvrLm88H'
+  config.oauth_token_secret = 'jutb4vmi3HwBGujNGzjmgIfQHg7eqP9Vr1UacUxLbmf3O'
+  config.auth_method        = :oauth
+end
+
   ########################
   # Keys and ID's
   ########################
@@ -71,8 +93,6 @@ class App < Sinatra::Base
   ########################
   $redis = Redis.new(:url => ENV["REDISTOGO_URL"])
 
-
-
   Instagram.configure do |config|
     config.client_id = instagram_client_id
     config.client_secret = instagram_client_secret
@@ -99,31 +119,57 @@ class App < Sinatra::Base
   ########################
 
   get('/') do
-    redirect to('/profile')
+#     gapi.auth.signIn(
+#  parameters
+# )
+
+        state = SecureRandom.urlsafe_base64
+  @google_post = "https://accounts.google.com/o/oauth2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fplus.login&state=#{state}&redirect_uri=#{REDIRECT_URIS_GOOGLE}&response_type=code&client_id=#{CLIENT_ID_GOOGLE}&access_type=offline"
+    render(:erb, :index, :layout => :layout)
+    # redirect to('/profile')
   end
 
+  get('/oauth2callback') do
+    code = params["code"]
+    response = HTTParty.post("https://accounts.google.com/o/oauth2/token",
+      :body => {:code => code,
+                :client_id => CLIENT_ID_GOOGLE,
+                :client_secret => CLIENT_SECRET_GOOGLE,
+                :redirect_uri => REDIRECT_URIS_GOOGLE,
+                :grant_type => "authorization_code"
+      })
+
+    session[:access_token_google] = response["access_token"]
+    redirect to("/profile")
+    end
+
+
   get('/feed/:id') do
-    CURRENT_FEED_ID = "user:#{@id}"
+    $current_feed_id = "user:#{@id}"
     # @feed = $redis.keys.sort_by {|s| s[/\d+/].to_i}[params[:id].to_i]
-    @feed_hash = $redis.get(CURRENT_FEED_ID)
+    @feed_hash = $redis.get($current_feed_id)
     redirect to("/snapshot/show")
   end
 
   
   get('/snapshot/show') do
-    if params[:index] == CURRENT_FEED_ID
-      
+
+    # binding.pry
+    @edit = "true" if params[:edit] == "true"
+    @edit = "false" if params[:edit] == "false" || @edit == nil
+    # binding.pry
+    if params[:index] == $current_feed_id
+      @edit = "true"
       # @feed = $redis.keys.sort_by {|s| s[/\d+/].to_i}[params[:index].to_i + 1]
-      @feed_hash = JSON.parse($redis.get(CURRENT_FEED_ID))
+      @feed_hash = JSON.parse($redis.get($current_feed_id))
     elsif params[:index]
-      
-      CURRENT_FEED_ID = "user:#{params[:index].to_i + 1}"
-      @feed_hash = JSON.parse($redis.get(CURRENT_FEED_ID))
+      # @edit = "false"
+      $current_feed_id = "user:#{params[:index].to_i + 1}"
+      @feed_hash = JSON.parse($redis.get($current_feed_id))
     else
-      
-      CURRENT_FEED_ID = $redis.keys.sort_by {|s| s[/\d+/].to_i}.last
+      $current_feed_id = $redis.keys.sort_by {|s| s[/\d+/].to_i}.last
     end
-    @feed_hash = JSON.parse($redis.get(CURRENT_FEED_ID))
+    @feed_hash = JSON.parse($redis.get($current_feed_id))
     @id = @feed_hash["id"]
     @concept_name = @feed_hash["concept_name"]
     @latitude = @feed_hash["latitude"]
@@ -134,7 +180,38 @@ class App < Sinatra::Base
     @temp = @feed_hash["temp"]
     @instagram_urls = @feed_hash["instagram"]
     @trending_results = @feed_hash["trending_results"]
-    
+
+    # Use 'track' to track a list of single-word keywords
+# TweetStream::Client.new.track('term1') do |status|
+#   puts "#{status.text}"
+# end
+
+
+
+# TweetStream::Client.new.locations((@latitude.to_i + 0.1),(@longitude.to_i + 0.1),(@latitude.to_i - 0.1),(@longitude.to_i - 0.1 )) do |tweet|
+#   binding.pry
+# end
+
+
+statuses = []
+TweetStream::Client.new.sample do |status, client|
+  statuses << status
+  client.stop if statuses.size >= 10
+end
+
+@statuses = statuses.map do |status|
+  {user_name: status.user.name, text: status.full_text}
+end
+
+# binding.pry
+# TweetStream::Client.new.sample do |status|
+#   # The status object is a special Hash with
+#   # method access to its keys.
+#   binding.pry
+#   puts "#{status.text}"
+# end
+# stream = Tweetstream.new(options[:tag], options[:from])
+# output = stream.render(options[:template])
     render(:erb, :_snapshot, :layout => :layout)
   end
 
@@ -163,7 +240,7 @@ class App < Sinatra::Base
       'Content-Type'  => "application/x-www-form-urlencoded;charset=UTF-8"
     }
     body = 'grant_type=client_credentials'
-    response = Twitter.post('/oauth2/token', :body => body, :headers => headers)
+    response = Twitters.post('/oauth2/token', :body => body, :headers => headers)
     bearer_token = response['access_token']
     headers = 
     {
@@ -172,10 +249,10 @@ class App < Sinatra::Base
     }
     #twitter get and manipulate data    
     get_woeid_url = "https://api.twitter.com/1.1/trends/closest.json?lat=#{@latitude}&long=#{@longitude}"
-    woeid_results = Twitter.get(get_woeid_url, :headers => headers)
+    woeid_results = Twitters.get(get_woeid_url, :headers => headers)
     woeid = woeid_results.to_a[0]["woeid"]
     trending_query = "https://api.twitter.com/1.1/trends/place.json?id=#{woeid}"
-    @trending_results = Twitter.get(trending_query , :headers => headers)[0]["trends"]
+    @trending_results = Twitters.get(trending_query , :headers => headers)[0]["trends"]
     #Instagram
     client = Instagram.client(:access_token => session[:access_token])
     results = client.media_search(@latitude,@longitude)
@@ -183,6 +260,7 @@ class App < Sinatra::Base
     results.each do |result|
       @instagram_urls.push(result["images"]["low_resolution"]["url"])
     end
+
     #redis set new feed object for user
     feed_hash = {
       "concept_name" => @concept_name,
@@ -209,12 +287,25 @@ class App < Sinatra::Base
   delete('/profile/instagram/:id') do
     # current = JSON.parse($redis.get($redis.keys.sort[-2]))
     
-    current_feed = JSON.parse($redis.get(CURRENT_FEED_ID))
+    current_feed = JSON.parse($redis.get($current_feed_id))
     current_feed["instagram"].delete_at(params[:id].to_i)
     $redis.set("user:#{current_feed["id"]}", current_feed.to_json)
-    redirect to ("/snapshot/show?index=#{CURRENT_FEED_ID}")
+    redirect to ("/snapshot/show?index=#{$current_feed_id}")
+  end
+
+  delete('/profile/feed/:id') do
+    # current = JSON.parse($redis.get($redis.keys.sort[-2]))
+    
+    current_feed = JSON.parse($redis.get($current_feed_id))
+    current_feed["instagram"].delete_at(params[:id].to_i)
+    $redis.set("user:#{current_feed["id"]}", current_feed.to_json)
+    redirect to ("/snapshot/show?index=#{$current_feed_id}")
   end
 
 end
 
+
+# f7684be507e8b7e8d60c591478f24e17fe0050d8868ce839926c467ab93392e1
+
+# f7684be507e8b7e8d60c591478f24e17fe0050d8868ce839926c467ab93392e1
 

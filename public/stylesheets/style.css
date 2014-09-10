@@ -1,74 +1,180 @@
 body, html {
 	background-color: white;
+	font-family: 'Oxygen', sans-serif;
 	padding: 40;
 }
-h1 {margin: 5px;}
 .wrapper {
-	max-width: 1228px;
+	width: 1224px;
 	margin:auto;
 	padding-top: 25px;
-
-	border-radius: 30px;
+	position: relative;
 }
 header {
 	padding: 0px 20px;
-	border-bottom: solid 1px grey;
+	border-bottom: solid 1px lightgrey;
+	height: 52px;
+	width: 100%;
+	position: fixed;
+	background-color: rgba(254,254,255,.8);
+	z-index: 300;
 }
+
+.wrapper2 {
+	/*position: absolute;*/
+	/*top:40px;*/
+}
+.logout {
+	float: right;
+	position: fixed;
+	right: 20px;
+	top: 15px;
+}	
+h1 {margin: 5px;
+position: fixed;
+z-index: 500;}
+
  h3 {
- 	padding:8px;
+ 	padding:10px 10px 8px 14px;
  	margin: 0;
  	float: left;
  	background-color: white;
- 	position: relative;
+ 	position: absolute;
  	z-index: 6;
- 	border-radius: 0 0 15px 0;
+ 	border-radius: 0 0 13px 0;
  }
-.instagram {
-	position: relative;
-	top: -425px;
-	z-index: 1
-}
-.icon_text {
-}
+ .sign_in {
+width: 100px;
+ 	height: 50px;
+ 	position: absolute;
+ 	top: 70px;
+ 	left: 40px;
+ }
+ .sign_in_button {
+ 	
+ }
 .weather {
+	box-shadow: 5px 5px 20px rgba(0,0,0,.3);
 	background-color: rgba(255,255,255,.85);
-	max-width: 300px;
-	padding: 0 10px 12px 10px;
-	margin-top: 50px;
-	margin: auto;
-	border-radius: 10px;
+	width: 244px;
+	height: 60px;
+	padding: 10px 20px 5px 24px;
+	position: fixed;
+	margin-left: -130px;
+	margin-bottom: 0;
+	border-radius: 20px 20px 0 0;
 	border: solid 1px lightgrey;
-	position: relative;
 	z-index: 4;
-	top: 20px;
+	top: 140px;
+	left:50%;
 }
+.icon {
+float:left;	
+position: absolute;
+left: 34px;
+top: 4px;
+}
+/*.curfeel {
+	float: bottom;
+}*/
+.icon_text {
+	float: left;
+	position: absolute;
+	bottom: 4px;
+	left: 20px;
 
-.trending {
-	margin: auto;
-	color: white;
-	max-width: 280px;
-	position: relative;
-	background-color: rgba(0,0,0,.5);
-	z-index: 2;
-	border-radius: 20px;
-	padding: 10px;
-	font-size: 1.3em;
-	top: 40px;
 }
 .cur_temp {
-	font-size: 2em;
+	font-size: 1.8em;
 	color: darkorange;
-	float: left;
+	float: right;
+	position: absolute;
+	top: 10px;
+	right: 30px;
 
 
 }
+.label {
+	float: right;
+	/*position: relative;
+	top: 20px;
+	right: -85px;*/
+	position: absolute;
+	bottom: 4px;
+	right: 20px;
+}
 
+
+.trending {
+	box-shadow: 5px 5px 20px rgba(0,0,0,.3);
+	margin-left: -130px;
+	color: white;
+	width: 260px;
+	position: fixed;
+	left:50%;
+	background-color: rgba(0,0,0,.6);
+	z-index: 2;
+	border-radius: 0 0 20px 20px;
+	padding: 15px;
+	font-size: 1.3em;
+	top:217px;
+}
+
+.trend {
+padding: 5px 0;
+
+}
+.trend_text {
+	color: white;
+}
+
+.photos {
+	margin: 0;
+}
+
+img {
+	max-width: 100%;
+}
+
+.feedlist {
+	list-style: none;
+}
+a {
+	text-decoration: none;
+	color: rgb(255,20,10);
+}
+a.feedhover:hover {
+	color: black;
+}
+a:hover {
+	color: rgb(255,20,10);
+}
 .profile {
+	/*padding-left: 30px;*/
+	margin:auto;
+	padding-top: 60px;
 	text-align: center;
 }
-.remove {
-	position:relative;
-	top: -27px;
+.twitter {
+	position: fixed;
+	right: 40px;
+	top: 90px;
+	z-index: 200;
+	width: 400px;
+}
+/*.title {
+	margin: auto;
+}*/
+.instagram {
+	position: absolute;
+	background-color: black;
+	top: 77px;
+	z-index: 1;
+	 box-shadow: 8px 8px 3px rgba(0,0,0,.3);
+}
+form.remove {
+	position:absolute;
+	top: 0;
+	right: 0;
 	background-color: white;
 	border: 0;
 	float: right;
@@ -78,11 +184,6 @@ header {
 .photos {
 padding: 0;
 z-index: -1;
-
-}
-.trend {
-padding: 5px 0;
-
 }
 
 ol {
@@ -95,16 +196,40 @@ ol {
 }
 .instagrams {
 width: auto;
-margin-bottom: -27px;
+margin-bottom: -4px;
 float: left;
 list-style: none;
 position: relative;
 z-index: -10;
+}
+.edit {
+	position: fixed;
+	float: right;
+	margin-right: 20px;
+	right: 0;
+	top: 70px;
+	
+	z-index: 101;
+}
+input {
+	padding: 3px;
+	margin:0;
+}
+
+.feed_delete {
+	float: left;
+	padding: 0px;
+	height: 6px;
+	width: 6px;
+}
+
+.feed_submit {
+	padding: 0px;
+	border: none;
+	background-image: none;
 
 }
-.icon {
-float:left;	
-}
-.curfeel {
-	float: right;
+.g-signin {
+	width: 200;
+	height: 20;
 }

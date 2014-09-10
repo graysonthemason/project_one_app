@@ -9,6 +9,8 @@ gem 'httparty'
 gem 'json'
 gem 'rest_client'
 gem 'instagram'
+gem 'jwt'
+gem 'tweetstream'
 
 # only used in development locally
 group :development do

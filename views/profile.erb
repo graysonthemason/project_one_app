@@ -1,16 +1,20 @@
-<div clas="profile">
+<div class="profile">
 <h2>Profile Page</h2>
 <form action="/snapshot" method="GET">
-  <label for="keyword">Location: </label>
+  <label for="keyword">Location: &nbsp;</label>
   <input type="text" name="keyword" placeholder="ie: Times Square, Las Vegas, Catskills" id="keyword">
   <input type="submit" value="Create Snapshot">
 </form>
 <section class="feeds">
 	<ul>
 		<%@feeds.drop(1).each_with_index do |feed, index| %>
-			<li><a href="/snapshot/show?index=<%=index%>"><%=JSON.parse($redis.get(feed))["concept_name"]%></a></li>
+			<li class="feedlist">
+				<!-- <form class="feed_delete" action="/profile/instagram/<%= index %>" method="POST">
+  		<input type="hidden" name="_method" value="DELETE">
+  		<input class "feed_submit" type="submit" value="">
+		</form> -->
+		<a class="feedhover" href="/snapshot/show?index=<%=index%>"><%=JSON.parse($redis.get(feed))["concept_name"]%></a></li>
 			<%end%>
 	</ul>
-
 </section>
 </div>
