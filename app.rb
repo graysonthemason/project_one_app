@@ -1,5 +1,5 @@
 require 'sinatra/base'
-require 'pry'
+require 'pry' if ENV["RACK_ENV"] == "development"
 require_relative 'feed'
 require 'redis'
 require 'json'
@@ -315,8 +315,4 @@ end
 
 end
 
-
-# f7684be507e8b7e8d60c591478f24e17fe0050d8868ce839926c467ab93392e1
-
-# f7684be507e8b7e8d60c591478f24e17fe0050d8868ce839926c467ab93392e1
 
