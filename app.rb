@@ -30,15 +30,27 @@ class App < Sinatra::Base
   end
   encoded = "alQwb28yc1d3eGNBVFVwWUh4bTZvTmJYQTp5WTF4VFF5NzN0UU12WnNPUW1HbVJsNGN4NWFtcTh5cnBCNnJ1NUF1aEQ5QWhnTDQ1RA0K"
   $current_feed_id = ""
-  CALLBACK_URL = "http://localhost:9393/oauth/callback"
+  
 
 #GOOGLE SIGN IN
     CLIENT_ID_GOOGLE = "381692329282-fft9jv4jfig202c13k6ajuklm0d1ev1u.apps.googleusercontent.com"
     EMAIL_ADDRESS_GOOGLE = "381692329282-fft9jv4jfig202c13k6ajuklm0d1ev1u@developer.gserviceaccount.com"
     CLIENT_SECRET_GOOGLE = "XAlp1T20f1C_yNDidn50O5ZQ"
-    REDIRECT_URIS_GOOGLE = "http://127.0.0.1:9292/oauth2callback"
-    JAVASCRIPT_ORIGINS = "http://127.0.0.1:9292"
-
+   
+    # JAVASCRIPT_ORIGINS = "http://127.0.0.1:9292"
+    if ENV["RACK_ENV"] == "development"
+    WEBSITE_URL = "http://localhost:9292"
+    CALLBACK_URL = "http://localhost:9292/oauth/callback"
+    REDIRECT_URI = "http://localhost:9292/Oauth"
+    JAVASCRIPT_ORIGINS = "http://localhost:9292m/"
+    REDIRECT_URIS_GOOGLE = "http://localhost:9292/oauth2callback"
+  else
+    REDIRECT_URIS_GOOGLE = "http://glacial-fjord-8454.herokuapp.com/oauth2callback"
+    CALLBACK_URL = "http://glacial-fjord-8454.herokuapp.com/oauth/callback"
+  WEBSITE_URL = "http://glacial-fjord-8454.herokuapp.com/"
+  REDIRECT_URI = "http://glacial-fjord-8454.herokuapp.com/Oauth"
+    JAVASCRIPT_ORIGINS = "http://glacial-fjord-8454.herokuapp.com/"
+  end
 
   before do
     logger.info "Request Headers: #{headers}"
@@ -123,8 +135,8 @@ end
 #  parameters
 # )
 
-        state = SecureRandom.urlsafe_base64
-  @google_post = "https://accounts.google.com/o/oauth2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fplus.login&state=#{state}&redirect_uri=#{REDIRECT_URIS_GOOGLE}&response_type=code&client_id=#{CLIENT_ID_GOOGLE}&access_type=offline"
+    state = SecureRandom.urlsafe_base64
+    @google_post = "https://accounts.google.com/o/oauth2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fplus.login&state=#{state}&redirect_uri=#{REDIRECT_URIS_GOOGLE}&response_type=code&client_id=#{CLIENT_ID_GOOGLE}&access_type=offline"
     render(:erb, :index, :layout => :layout)
     # redirect to('/profile')
   end
@@ -151,7 +163,6 @@ end
     redirect to("/snapshot/show")
   end
 
-  
   get('/snapshot/show') do
 
     # binding.pry
@@ -193,15 +204,15 @@ end
 # end
 
 
-statuses = []
-TweetStream::Client.new.sample do |status, client|
-  statuses << status
-  client.stop if statuses.size >= 10
-end
+# statuses = []
+# TweetStream::Client.new.sample do |status, client|
+#   statuses << status
+#   client.stop if statuses.size >= 10
+# end
 
-@statuses = statuses.map do |status|
-  {user_name: status.user.name, text: status.full_text}
-end
+# @statuses = statuses.map do |status|
+#   {user_name: status.user.name, text: status.full_text}
+# end
 
 # binding.pry
 # TweetStream::Client.new.sample do |status|
