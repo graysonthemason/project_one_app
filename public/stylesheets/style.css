@@ -163,9 +163,15 @@ img {
 	max-width: 100%;
 }
 
+ul.profile_feed_list {
+	padding: 0;
+}
 .feedlist {
+margin: auto;
 	list-style: none;
 	font-size: 1.1em;
+	max-width: 380px
+
 }
 a {
 	text-decoration: none;
@@ -173,6 +179,9 @@ a {
 }
 a.feedhover:hover {
 	color: black;
+}
+.feedhover {
+	margin-left: -26px;
 }
 a.logout:hover {
 	color:black;
@@ -237,11 +246,13 @@ form.edit {
 }
 
 .feed_delete {
+	position: relative;
 	float: left;
-	padding: 0px;
-	height: 6px;
-	width: 6px;
+	z-index: 30;
+	height: 20px;
 }
+
+
 
 .feed_submit {
 	padding: 0px;

@@ -6,14 +6,15 @@
   <input type="submit" value="Create Snapshot">
 </form>
 <section class="feeds">
-	<ul>
-		<%@feeds.drop(1).each_with_index do |feed, index| %>
+	<ul class="profile_feed_list">
+		<%@feeds.drop(1).each do |feed| %>
 			<li class="feedlist">
-				<!-- <form class="feed_delete" action="/profile/instagram/<%= index %>" method="POST">
+				<form class="feed_delete" action="/profile/feed/<%= JSON.parse($redis.get(feed))["id"] %>" method="POST">
+  		<input type="image" src="http://www.veryicon.com/icon/16/System/Must%20Have/Delete.png" alt="Submit Form" />
   		<input type="hidden" name="_method" value="DELETE">
-  		<input class "feed_submit" type="submit" value="">
-		</form> -->
-		<a class="feedhover" href="/snapshot/show?index=<%=index%>"><%=JSON.parse($redis.get(feed))["concept_name"]%></a></li>
+  
+		</form>
+		<a class="feedhover" href="/snapshot/show?index=<%=JSON.parse($redis.get(feed))['id']%>"><%=JSON.parse($redis.get(feed))["concept_name"]%></a></li>
 			<%end%>
 	</ul>
 </section>

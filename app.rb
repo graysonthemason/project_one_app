@@ -162,7 +162,6 @@ class App < Sinatra::Base
   end
 
   get('/snapshot/show') do
-
     # binding.pry
     @edit = "true" if params[:edit] == "true"
     @edit = "false" if params[:edit] == "false" || @edit == nil
@@ -176,12 +175,12 @@ class App < Sinatra::Base
     # binding.pry
 
       # @edit = "false"
-      $current_feed_id = "user:#{params[:index].to_i + 1}"
+      $current_feed_id = "user:#{params[:index].to_i}"
       @feed_hash = JSON.parse($redis.get($current_feed_id))
     else
     # binding.pry
-      
-      # $current_feed_id = $redis.keys.sort_by {|s| s[/\d+/].to_i}.last
+
+      $current_feed_id = $redis.keys.sort_by {|s| s[/\d+/].to_i}.last
     end
     @feed_hash = JSON.parse($redis.get($current_feed_id))
     @id = @feed_hash["id"]
@@ -329,12 +328,13 @@ end
   end
 
   delete('/profile/feed/:id') do
+    # binding.pry
+    $current_feed_id = "user:#{params[:id]}"
     # current = JSON.parse($redis.get($redis.keys.sort[-2]))
-    
+    # binding.pry
     current_feed = JSON.parse($redis.get($current_feed_id))
-    current_feed["instagram"].delete_at(params[:id].to_i)
-    $redis.set("user:#{current_feed["id"]}", current_feed.to_json)
-    redirect to ("/snapshot/show?index=#{$current_feed_id}")
+    $redis.del($current_feed_id)
+    redirect to ("/profile")
   end
 
 end
