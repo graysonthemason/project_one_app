@@ -13,8 +13,8 @@ Present your work to the class on the final day of the project, and participate 
 gist.github.com
 ### Screen Shots
 ___
-<img width=720px src="/Users/gray/Desktop/Screen Shot 2014-09-10 at 2.12.24 PM.png">
-<img width=720px src="/Users/gray/Desktop/Screen Shot 2014-09-10 at 2.18.55 PM.png">
+<img width=720px style="border: solid 1px lightgrey" src="./public/images/Screen Shot 2014-09-10 at 2.12.24 PM.png">
+<img width=720p style="border: solid 1px lightgrey" src="./public/images/Screen Shot 2014-09-10 at 2.18.55 PM.png">
 
 ###Technologies
 ___
