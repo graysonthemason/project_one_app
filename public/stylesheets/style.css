@@ -19,19 +19,16 @@ header {
 	z-index: 300;
 }
 
-.wrapper2 {
-	/*position: absolute;*/
-	/*top:40px;*/
-}
 .logout {
 	float: right;
 	position: fixed;
 	right: 20px;
 	top: 15px;
 }	
-h1 {margin: 5px;
-position: fixed;
-z-index: 500;}
+h1 {
+	margin: 5px;
+	position: fixed;
+	z-index: 500;}
 
  h3 {
  	padding:10px 10px 8px 14px;
@@ -99,10 +96,10 @@ width: 100px;
 	right:50%;
 }
 .icon {
-float:left;	
-position: absolute;
-left: 34px;
-top: 4px;
+	float:left;	
+	position: absolute;
+	left: 34px;
+	top: 4px;
 }
 /*.curfeel {
 	float: bottom;
@@ -126,9 +123,6 @@ top: 4px;
 }
 .label {
 	float: right;
-	/*position: relative;
-	top: 20px;
-	right: -85px;*/
 	position: absolute;
 	bottom: 4px;
 	right: 20px;
@@ -152,10 +146,13 @@ top: 4px;
 
 .trend {
 padding: 5px 0;
-
+text-shadow: 2px 2px 10px rgba(0,0,0,.6);
 }
 .trend_text {
 	color: white;
+}
+form.location_input {
+	color: black;
 }
 
 .photos {
@@ -168,6 +165,7 @@ img {
 
 .feedlist {
 	list-style: none;
+	font-size: 1.1em;
 }
 a {
 	text-decoration: none;
@@ -175,6 +173,9 @@ a {
 }
 a.feedhover:hover {
 	color: black;
+}
+a.logout:hover {
+	color:black;
 }
 a:hover {
 	color: rgb(255,20,10);
@@ -192,30 +193,18 @@ a:hover {
 	z-index: 200;
 	width: 400px;
 }
-/*.title {
-	margin: auto;
-}*/
+
 .instagram {
 	margin-left: -12px;
 	position: absolute;
-	background-color: black;
 	top: 77px;
 	z-index: 1;
-	 box-shadow: 8px 8px 3px rgba(0,0,0,.3);
+	box-shadow: 6px 6px 2px rgba(0,0,0,.3);
 }
-form.remove {
-	position:absolute;
-	top: 0;
-	right: 0;
-	background-color: white;
-	border: 0;
-	float: right;
-	z-index: 50;
-	border-radius: 5px;
-}
+
 .photos {
-padding: 0;
-z-index: -1;
+	padding: 0;
+	z-index: -1;
 }
 
 ol {
@@ -223,29 +212,28 @@ ol {
 	width: auto;
 	text-align: center;
 	margin: 0;
-		position: relative;
+	position: relative;
 	left: -10px;
 }
+
 .instagrams {
-width: auto;
-margin-bottom: -4px;
-float: left;
-list-style: none;
-position: relative;
-z-index: -10;
+	width: auto;
+	margin-bottom: -4px;
+	float: left;
+	list-style: none;
+	position: relative;
+	z-index: -10;
 }
-.edit {
+
+form.edit {
 	position: fixed;
 	float: right;
 	margin-right: 20px;
-	right: 0;
-	top: 70px;
+	right: 10px;
+	top: 40px;
+	z-index: 400;
+	color: rgb(230,20,10);
 	
-	z-index: 101;
-}
-input {
-	padding: 3px;
-	margin:0;
 }
 
 .feed_delete {
@@ -265,3 +253,22 @@ input {
 	width: 200;
 	height: 20;
 }
+input {
+	border: solid 4px rgba(200,200,200);
+	padding: 0px 5px;
+	background-color: rgba(255,255,255,1);
+	font-size: 1.2em;
+	font-style: bold;
+	border-radius: 8px;
+}
+
+form.remove {
+	color: rgb(230,20,10);
+	position: absolute;
+	top: 0;
+	right: 0;
+	float: right;
+	z-index: 50;
+
+}
+

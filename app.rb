@@ -169,14 +169,19 @@ class App < Sinatra::Base
     # binding.pry
     if params[:index] == $current_feed_id
       @edit = "true"
+    # binding.pry
       # @feed = $redis.keys.sort_by {|s| s[/\d+/].to_i}[params[:index].to_i + 1]
       @feed_hash = JSON.parse($redis.get($current_feed_id))
     elsif params[:index]
+    # binding.pry
+
       # @edit = "false"
       $current_feed_id = "user:#{params[:index].to_i + 1}"
       @feed_hash = JSON.parse($redis.get($current_feed_id))
     else
-      $current_feed_id = $redis.keys.sort_by {|s| s[/\d+/].to_i}.last
+    # binding.pry
+      
+      # $current_feed_id = $redis.keys.sort_by {|s| s[/\d+/].to_i}.last
     end
     @feed_hash = JSON.parse($redis.get($current_feed_id))
     @id = @feed_hash["id"]
@@ -218,13 +223,23 @@ class App < Sinatra::Base
     render(:erb, :_snapshot, :layout => :layout)
   end
 
+  get('/error') do
+  render(:erb, :_snapshot, :layout => :layout)
+end
 
   get('/snapshot') do
     # binding.pry
     #retrieve geolocation
-    nytimes_url = "http://api.nytimes.com/svc/semantic/v2/geocodes/query.json?&name=#{params[:keyword].gsub(' ', '+')}&perpage=1&api-key=#{Geo_API_Key}"
+    input = params[:keyword].split.map {|word| word.capitalize}.join(" ") 
+    nytimes_url = "http://api.nytimes.com/svc/semantic/v2/geocodes/query.json?&name=#{input.gsub(' ', '+')}&perpage=1&api-key=#{Geo_API_Key}"
+    if nytimes_url == nil
+      nytimes_url = "http://api.nytimes.com/svc/semantic/v2/geocodes/query.json?&country_name={input.gsub(' ', '+')}&api-key=#{Geo_API_Key}"
+    end
     # http://api.nytimes.com/svc/semantic/v2/geocodes/query.json?&name=Las+Vegas&country_name=United+States&api-key=####
     location = HTTParty.get(nytimes_url)
+    if location == nil
+      redirect to('/error')
+    end
     @concept_name = location["results"][0]["concept_name"]
     @latitude = location["results"][0]["geocode"]["latitude"] 
     @longitude = location["results"][0]["geocode"]["longitude"] 
@@ -232,6 +247,9 @@ class App < Sinatra::Base
     base_url = "http://api.wunderground.com/api/#{Weather_API_Key}/conditions/q/"
     weather_url = "#{base_url}#{@latitude},#{@longitude}.json"
     weather = HTTParty.get(weather_url)
+    if weather == nil
+      redirect to('/error')
+    end
     @icon = weather["current_observation"]["icon"]
     @icon_url = weather["current_observation"]["icon_url"]
     @feels_like = weather["current_observation"]["feelslike_f"] 
